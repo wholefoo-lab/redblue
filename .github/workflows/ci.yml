@@ -36,7 +36,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m venv .venv
-      - run: .venv/bin/python -m pip install --require-hashes --only-binary=:all: -r requirements.txt
+      - run: |
+          .venv/bin/python -m pip install --require-hashes --only-binary=:all: -r requirements.txt
       - run: |
           for d in packages/core packages/cms packages/templates packages/growth packages/observe \
                    packages/gate packages/builder packages/platform admin packages/video packages/cli; do
