@@ -22,6 +22,31 @@ jobs:
       - name: Gate evals (no AI)
         run: python evals/gate/run_eval.py --no-ai --max-fp-rate 0.1 --min-recall 0.9
 
+  locked:
+    # The same tests, installed from the hash-pinned requirements.txt the way an offline sandbox
+    # does it: wheels only, every hash checked, then the local packages editable with no dependency
+    # resolution and no build isolation (so setuptools must come from the lock, not the network).
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m venv .venv
+      - run: |
+          .venv/bin/python -m pip install --require-hashes --only-binary=:all: -r requirements.txt
+      - run: |
+          for d in packages/core packages/cms packages/templates packages/growth packages/observe \
+                   packages/gate packages/builder packages/platform admin packages/video packages/cli; do
+            .venv/bin/python -m pip install --no-index --no-deps --no-build-isolation -e "./$d"
+          done
+      - run: .venv/bin/python -m pip check
+      - run: .venv/bin/ruff check .
+      - run: .venv/bin/python -m pytest
+
   admin-screens:
     # Real-browser check of every admin page at desktop and phone widths; the screenshots
     # are kept as a build artifact so a person can look at them.
