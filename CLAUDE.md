@@ -35,3 +35,6 @@ in `docs/PLAN.md`. Read it before any large change.
   review the file (renames and data moves by hand), commit it with the model change.
 - Tests live in `<package>/tests/`. Run everything with `pytest`; lint with `ruff check .`.
 - Install for development: `make dev`.
+- A new third-party dependency goes in the package's `pyproject.toml` AND in `requirements.in`;
+  then regenerate the hash-pinned `requirements.txt` (command at the top of `requirements.in`).
+  `tests/test_requirements.py` fails until the lock covers it. Never pin a `redblue-*` package.
